@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>RZ PRO | نظام مبيعات متكامل</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1a1a2e">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3135/3135715.png">
+
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <style>
+        :root { 
+            --bg: #f3f4f6; --card: #ffffff; --text: #1f2937; --border: #e5e7eb;
+            --primary: #2563eb; --accent: #f59e0b; --nav-bg: #ffffff;
+            --success: #10b981; --danger: #ef4444; --dark-panel: #1f2937;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        [data-theme="dark"] {
+            --bg: #111827; --card: #1f2937; --text: #f9fafb; --border: #374151;
+            --primary: #3b82f6; --accent: #fbbf24; --nav-bg: #1f2937;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+        }
+
+        * { font-family: 'Cairo', sans-serif; box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg); color: var(--text); margin: 0; padding-bottom: 80px; transition: 0.3s; overflow-x: hidden; }
+
+        /* UI Components */
+        .container { max-width: 1200px; margin: auto; padding: 20px; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .card { background: var(--card); padding: 25px; border-radius: 16px; border: 1px solid var(--border); margin-bottom: 20px; box-shadow: var(--shadow); position: relative; }
+        
+        .header { display: flex; flex-direction: row-reverse; justify-content: space-between; align-items: center; padding: 15px 30px; background: var(--card); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 1000; box-shadow: var(--shadow); }
+        .logo { font-weight: 900; font-size: 1.8rem; background: linear-gradient(45deg, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -1px; }
+
+        /* Inputs & Buttons */
+        input, select, textarea { width: 100%; padding: 12px 16px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-size: 1rem; transition: 0.2s; }
+        input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+        
+        .btn { border: none; border-radius: 10px; font-weight: 700; padding: 14px; width: 100%; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; font-size: 1rem; }
+        .btn:hover { transform: translateY(-2px); opacity: 0.9; }
+        .btn:active { transform: scale(0.98); }
+        .btn-main { background: var(--primary); color: #fff; box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3); }
+        .btn-outline { background: transparent; border: 2px solid var(--border); color: var(--text); }
+        .btn-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.2); }
+        .btn-sm { padding: 8px 16px; font-size: 0.85rem; width: auto; }
+
+        /* Tables */
+        .sales-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .sales-table th { text-align: right; padding: 15px; border-bottom: 2px solid var(--border); color: var(--primary); font-size: 0.9rem; }
+        .sales-table td { padding: 15px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        .qty-control { display: flex; align-items: center; gap: 10px; background: var(--bg); padding: 5px; border-radius: 8px; width: fit-content; }
+        .qty-btn { width: 28px; height: 28px; border-radius: 6px; background: var(--card); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: bold; }
+
+        /* Navigation */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--nav-bg); border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 12px 0; z-index: 2000; backdrop-filter: blur(10px); }
+        .nav-item { text-align: center; color: var(--text); opacity: 0.5; font-size: 0.75rem; flex: 1; cursor: pointer; transition: 0.3s; }
+        .nav-item.active { opacity: 1; color: var(--primary); transform: translateY(-3px); }
+        .nav-item i { font-size: 1.4rem; display: block; margin-bottom: 4px; }
+
+        /* Dashboard & Charts */
+        .chart-container { position: relative; height: 300px; width: 100%; }
+        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .stat-box { background: linear-gradient(135deg, var(--card), var(--bg)); border: 1px solid var(--border); padding: 20px; border-radius: 12px; text-align: center; }
+        .stat-num { font-size: 1.8rem; font-weight: 900; color: var(--primary); margin: 5px 0; }
+        .stat-title { font-size: 0.8rem; opacity: 0.7; }
+
+        /* Print Overlay & ZERO MARGINS CSS */
+        #print-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; display: none; overflow-y: auto; padding: 20px; backdrop-filter: blur(5px); }
+        #capture-area { background: #fff; width: 100%; max-width: 80mm; /* Thermal size or A4 */ margin: 0 auto; color: #000; padding: 10px; } 
+        /* A4 Override in JS if needed */
+
+        /* الطباعة النظيفة - Clean Print */
+        @media print {
+            @page { margin: 0; size: auto; } /* Key: Remove browser margins */
+            body { margin: 0; padding: 0; background: #fff; }
+            body * { visibility: hidden; }
+            #print-overlay, #print-overlay * { visibility: visible; }
+            #print-overlay { position: absolute; left: 0; top: 0; width: 100%; height: auto; background: none; padding: 0; overflow: visible; }
+            #capture-area { margin: 0; width: 100%; max-width: 100%; padding: 5mm; border: none; box-shadow: none; }
+            .no-print { display: none !important; }
+            
+            /* Remove Header/Footer artifacts */
+            header, footer { display: none; }
+        }
+
+        /* Toast */
+        .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 12px 24px; border-radius: 30px; z-index: 10000; animation: slideUp 0.3s ease; box-shadow: 0 10px 20px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 10px; }
+        @keyframes slideUp { from { transform: translate(-50%, 20px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
+    </style>
+</head>
+<body data-theme="dark">
+
+    <div id="toast-container"></div>
+
+    <div id="print-overlay">
+        <div class="no-print" style="width:100%; max-width:500px; margin:0 auto 10px; display:flex; gap:10px;">
+            <button onclick="window.print()" class="btn btn-main"><i class="fas fa-print"></i> طباعة فورية</button>
+            <button onclick="closePrintOverlay()" class="btn btn-outline" style="background:#fff; color:#000;">إغلاق</button>
+        </div>
+        <div id="capture-area"></div>
+    </div>
+
+    <div class="header">
+        <div class="logo">RZ <span style="font-weight: 300; font-size: 1rem; color: var(--text);">POS PRO</span></div>
+        <div><button class="btn-sm btn-outline" onclick="toggleTheme()"><i class="fas fa-adjust"></i></button></div>
+    </div>
+
+    <div id="screen-sales" class="container">
+        <div class="card" style="border-top: 4px solid var(--primary);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h3><i class="fas fa-cash-register"></i> نقطة البيع</h3>
+                <span id="sales-edit-badge" style="background:var(--accent); color:#000; padding:2px 10px; border-radius:10px; font-size:0.7rem; font-weight:bold; display:none;">تعديل فاتورة</span>
+            </div>
+            
+            <div style="display:flex; gap:10px; margin-bottom:15px;">
+                <input type="text" id="barcode-input" placeholder="باركود..." style="flex:1; font-family:monospace;" onkeydown="handleBarcode(event)">
+                <select id="manual-product-select" style="flex:2;" onchange="addManualProduct(this)">
+                    <option value="">بحث عن صنف...</option>
+                </select>
+            </div>
+
+            <div style="max-height: 40vh; overflow-y: auto; border: 1px solid var(--border); border-radius: 10px; padding: 0 10px;">
+                <table class="sales-table">
+                    <thead><tr><th>الصنف</th><th style="text-align:center;">الكمية</th><th>السعر</th><th></th></tr></thead>
+                    <tbody id="sales-cart-body"></tbody>
+                </table>
+                <div id="empty-cart-msg" style="text-align:center; padding:30px; opacity:0.5;">
+                    <i class="fas fa-cart-arrow-down" style="font-size:2rem;"></i><br>ابدأ البيع
+                </div>
+            </div>
+
+            <div style="background: var(--bg); padding: 15px; border-radius: 12px; margin-top: 15px;">
+                <div class="input-group" style="margin-bottom:10px;">
+                    <input type="text" id="sales-customer-name" placeholder="اسم العميل (اختياري)">
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center; font-size:1.2rem; font-weight:bold;">
+                    <span>الإجمالي:</span>
+                    <span id="sales-total-display" style="color:var(--primary); font-size:1.6rem;">0.00</span>
+                </div>
+            </div>
+            
+            <div style="display:flex; gap:10px; margin-top:15px;">
+                <button onclick="checkoutSales()" class="btn btn-main" id="btn-checkout"><i class="fas fa-check-circle"></i> إصدار الفاتورة</button>
+                <button onclick="resetSalesApp()" class="btn btn-danger" id="btn-cancel" style="display:none; width:auto;"><i class="fas fa-times"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-reports" class="container" style="display:none;">
+        <div class="card">
+            <h3><i class="fas fa-chart-pie"></i> لوحة التقارير</h3>
+            <p style="opacity:0.6; font-size:0.8rem; margin-bottom:20px;">تحليلات شاملة للمبيعات والأداء</p>
+            
+            <div class="stat-grid">
+                <div class="stat-box">
+                    <div class="stat-title">مبيعات اليوم</div>
+                    <div class="stat-num" id="stat-today-sales">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-title">عدد الفواتير</div>
+                    <div class="stat-num" id="stat-total-invoices">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-title">إجمالي الإيرادات</div>
+                    <div class="stat-num" id="stat-total-revenue">0</div>
+                </div>
+            </div>
+
+            <div class="card" style="box-shadow:none; border:1px solid var(--border);">
+                <h4><i class="fas fa-chart-line"></i> حركة المبيعات (آخر 7 أيام)</h4>
+                <div class="chart-container">
+                    <canvas id="salesChart"></canvas>
+                </div>
+            </div>
+            
+            <button onclick="printReport()" class="btn btn-outline"><i class="fas fa-print"></i> طباعة تقرير مالي</button>
+        </div>
+    </div>
+
+    <div id="screen-history" class="container" style="display:none;">
+        <div class="card">
+            <input type="text" id="search-input" oninput="renderHistory()" placeholder="بحث برقم الفاتورة أو العميل...">
+        </div>
+        <div id="history-list"></div>
+    </div>
+
+    <div id="screen-settings" class="container" style="display:none;">
+        <div class="card" style="border-top: 4px solid var(--accent);">
+            <h3><i class="fas fa-building"></i> إعدادات المؤسسة</h3>
+            <div style="display:grid; gap:10px; margin-top:15px;">
+                <input type="text" id="org-name" placeholder="اسم المتجر / الشركة">
+                <input type="text" id="org-address" placeholder="العنوان">
+                <input type="text" id="org-phone" placeholder="الهاتف">
+                <input type="text" id="org-tax" placeholder="الرقم الضريبي (اختياري)">
+            </div>
+            <div style="margin-top:10px; display:flex; gap:10px; align-items:center;">
+                <img id="logo-preview" src="" style="width:40px; height:40px; border-radius:5px; background:#eee; object-fit:contain;">
+                <button onclick="document.getElementById('logo-input').click()" class="btn btn-sm btn-outline">تحميل شعار</button>
+                <input type="file" id="logo-input" hidden onchange="handleLogoUpload(event)">
+            </div>
+            <button onclick="saveSettings()" class="btn btn-main" style="margin-top:15px;">حفظ الإعدادات</button>
+        </div>
+
+        <div class="card">
+            <h3><i class="fas fa-database"></i> البيانات والنسخ الاحتياطي</h3>
+            <p style="color:var(--danger); font-size:0.8rem; margin-bottom:15px;">* تذكر دائماً أخذ نسخة احتياطية قبل إغلاق المتصفح.</p>
+            
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <button onclick="document.getElementById('csv-input').click()" class="btn btn-outline"><i class="fas fa-upload"></i> استيراد أصناف (CSV)</button>
+                <input type="file" id="csv-input" hidden onchange="importProductsCSV(event)">
+                <button onclick="downloadCSVTemplate()" class="btn btn-outline"><i class="fas fa-file-csv"></i> نموذج CSV</button>
+            </div>
+            
+            <hr style="margin:20px 0; border-color:var(--border);">
+            
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <button onclick="exportDB()" class="btn btn-main"><i class="fas fa-download"></i> نسخ احتياطي كامل</button>
+                <button onclick="document.getElementById('db-import').click()" class="btn btn-outline"><i class="fas fa-history"></i> استعادة نسخة</button>
+                <input type="file" id="db-import" hidden onchange="importDB(event)">
+            </div>
+            
+            <button onclick="wipeDB()" class="btn btn-danger" style="margin-top:20px;">تهيئة النظام (حذف الكل)</button>
+        </div>
+        <p style="text-align:center; font-size:0.7rem; opacity:0.5;">RZ POS PRO v2026.5.0</p>
+    </div>
+
+    <nav class="bottom-nav">
+        <div class="nav-item active" id="nav-sales" onclick="showTab('screen-sales', this)"><i class="fas fa-cash-register"></i>البيع</div>
+        <div class="nav-item" id="nav-reports" onclick="showTab('screen-reports', this); updateReports();"><i class="fas fa-chart-bar"></i>التقارير</div>
+        <div class="nav-item" id="nav-history" onclick="showTab('screen-history', this); renderHistory();"><i class="fas fa-receipt"></i>السجل</div>
+        <div class="nav-item" id="nav-settings" onclick="showTab('screen-settings', this)"><i class="fas fa-cog"></i>الإعدادات</div>
+    </nav>
+
+    <script>
+        // --- Core: Database & State ---
+        const DB_NAME = 'RZ_POS_2026';
+        let db;
+        let salesCart = [];
+        let productCatalog = [];
+        let appSettings = { orgName: 'RZ Store', prefix: 'INV', counter: 1000 };
+        let editingId = null;
+        let chartInstance = null; // For Chart.js
+
+        // --- Init ---
+        window.onload = async () => {
+            await initDB();
+            await loadData();
+            toggleTheme(localStorage.getItem('RZ_THEME') || 'dark');
+            setupExitWarning();
+            updateProductDropdown();
+        };
+
+        // --- Prevent Accidental Exit (Safety Feature) ---
+        function setupExitWarning() {
+            window.addEventListener('beforeunload', (e) => {
+                e.preventDefault();
+                e.returnValue = 'هل قمت بعمل نسخة احتياطية؟';
+            });
+        }
+
+        // --- Database Logic (IndexedDB) ---
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const req = indexedDB.open(DB_NAME, 1);
+                req.onupgradeneeded = (e) => {
+                    db = e.target.result;
+                    if (!db.objectStoreNames.contains('sales')) db.createObjectStore('sales', { keyPath: 'id' });
+                    if (!db.objectStoreNames.contains('products')) db.createObjectStore('products', { keyPath: 'code' });
+                    if (!db.objectStoreNames.contains('settings')) db.createObjectStore('settings', { keyPath: 'key' });
+                };
+                req.onsuccess = (e) => { db = e.target.result; resolve(); };
+                req.onerror = (e) => reject(e);
+            });
+        }
+
+        async function loadData() {
+            // Load Settings
+            const tx = db.transaction(['settings', 'products'], 'readonly');
+            const sStore = tx.objectStore('settings');
+            const pStore = tx.objectStore('products');
+
+            const keys = ['orgName', 'orgAddress', 'orgPhone', 'orgTax', 'logo', 'counter'];
+            for(let key of keys) {
+                const req = sStore.get(key);
+                req.onsuccess = () => { if(req.result) appSettings[key] = req.result.value; };
+            }
+
+            pStore.getAll().onsuccess = (e) => { productCatalog = e.target.result; updateProductDropdown(); };
+            
+            tx.oncomplete = () => {
+                document.getElementById('org-name').value = appSettings.orgName || '';
+                document.getElementById('org-address').value = appSettings.orgAddress || '';
+                document.getElementById('org-phone').value = appSettings.orgPhone || '';
+                document.getElementById('org-tax').value = appSettings.orgTax || '';
+                if(appSettings.logo) document.getElementById('logo-preview').src = appSettings.logo;
+            };
+        }
+
+        // --- Sales & POS Logic ---
+        function updateProductDropdown() {
+            const sel = document.getElementById('manual-product-select');
+            sel.innerHTML = '<option value="">بحث عن صنف...</option>';
+            productCatalog.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.code;
+                opt.text = `${p.name} (${p.price})`;
+                sel.appendChild(opt);
+            });
+        }
+
+        function handleBarcode(e) {
+            if(e.key === 'Enter') {
+                const code = e.target.value.trim();
+                const product = productCatalog.find(p => p.code === code);
+                if(product) { addToCart(product); e.target.value = ''; }
+                else { showToast("الصنف غير موجود!", "error"); }
+            }
+        }
+
+        function addManualProduct(sel) {
+            const code = sel.value;
+            if(code) {
+                addToCart(productCatalog.find(p => p.code === code));
+                sel.value = '';
+            }
+        }
+
+        function addToCart(product) {
+            const exist = salesCart.find(i => i.code === product.code);
+            if(exist) exist.qty++; else salesCart.push({...product, qty:1});
+            renderCart();
+        }
+
+        function renderCart() {
+            const tbody = document.getElementById('sales-cart-body');
+            tbody.innerHTML = '';
+            let total = 0;
+            if(salesCart.length === 0) document.getElementById('empty-cart-msg').style.display = 'block';
+            else {
+                document.getElementById('empty-cart-msg').style.display = 'none';
+                salesCart.forEach((item, idx) => {
+                    total += (item.price * item.qty);
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${item.name}</td>
+                            <td><div class="qty-control"><div class="qty-btn" onclick="updateQty(${idx},-1)">-</div><span>${item.qty}</span><div class="qty-btn" onclick="updateQty(${idx},1)">+</div></div></td>
+                            <td>${(item.price * item.qty).toFixed(2)}</td>
+                            <td><i class="fas fa-trash" style="color:var(--danger); cursor:pointer" onclick="salesCart.splice(${idx},1); renderCart()"></i></td>
+                        </tr>`;
+                });
+            }
+            document.getElementById('sales-total-display').innerText = total.toFixed(2);
+        }
+
+        function updateQty(idx, d) {
+            salesCart[idx].qty += d;
+            if(salesCart[idx].qty <= 0) salesCart.splice(idx,1);
+            renderCart();
+        }
+
+        async function checkoutSales() {
+            if(salesCart.length === 0) return showToast("السلة فارغة", "error");
+            
+            const total = parseFloat(document.getElementById('sales-total-display').innerText);
+            const sn = editingId ? (await getInvoice(editingId)).sn : `INV-${appSettings.counter}`;
+            
+            const invoice = {
+                id: editingId || Date.now(),
+                sn: sn,
+                date: new Date().toLocaleDateString('en-GB'), // DD/MM/YYYY format fix
+                timestamp: Date.now(),
+                customer: document.getElementById('sales-customer-name').value || 'عميل نقدي',
+                items: salesCart,
+                total: total
+            };
+
+            const tx = db.transaction(['sales', 'settings'], 'readwrite');
+            tx.objectStore('sales').put(invoice);
+            
+            if(!editingId) {
+                appSettings.counter++;
+                tx.objectStore('settings').put({key: 'counter', value: appSettings.counter});
+            }
+
+            tx.oncomplete = () => {
+                showToast("تم الحفظ بنجاح");
+                printInvoice(invoice);
+                resetSalesApp();
+            };
+        }
+
+        function resetSalesApp() {
+            salesCart = [];
+            editingId = null;
+            document.getElementById('sales-customer-name').value = '';
+            document.getElementById('sales-edit-badge').style.display = 'none';
+            document.getElementById('btn-checkout').innerHTML = '<i class="fas fa-check-circle"></i> إصدار الفاتورة';
+            document.getElementById('btn-cancel').style.display = 'none';
+            renderCart();
+        }
+
+        // --- History & Editing ---
+        async function renderHistory() {
+            const q = document.getElementById('search-input').value.toLowerCase();
+            const tx = db.transaction('sales', 'readonly');
+            const req = tx.objectStore('sales').getAll();
+            req.onsuccess = (e) => {
+                const list = document.getElementById('history-list');
+                const data = e.target.result.sort((a,b) => b.timestamp - a.timestamp);
+                list.innerHTML = data.filter(i => i.sn.toLowerCase().includes(q) || i.customer.includes(q)).map(i => `
+                    <div class="card" style="padding:15px; display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <b>${i.sn}</b> <span style="font-size:0.8rem; opacity:0.7;">${i.date}</span><br>
+                            <small>${i.customer}</small>
+                        </div>
+                        <div style="text-align:left;">
+                            <div style="font-weight:bold; color:var(--primary); font-size:1.1rem;">${i.total.toFixed(2)}</div>
+                            <div style="display:flex; gap:5px; margin-top:5px;">
+                                <button onclick='printInvoice(${JSON.stringify(i)})' class="btn-sm btn-outline"><i class="fas fa-print"></i></button>
+                                <button onclick="editInvoice(${i.id})" class="btn-sm btn-outline"><i class="fas fa-edit"></i></button>
+                                <button onclick="deleteInvoice(${i.id})" class="btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            };
+        }
+
+        async function editInvoice(id) {
+            const tx = db.transaction('sales', 'readonly');
+            tx.objectStore('sales').get(id).onsuccess = (e) => {
+                const inv = e.target.result;
+                salesCart = inv.items;
+                editingId = inv.id;
+                document.getElementById('sales-customer-name').value = inv.customer;
+                document.getElementById('sales-edit-badge').style.display = 'inline-block';
+                document.getElementById('btn-checkout').innerHTML = 'حفظ التعديلات';
+                document.getElementById('btn-cancel').style.display = 'inline-flex';
+                renderCart();
+                showTab('screen-sales', document.getElementById('nav-sales'));
+            };
+        }
+
+        function deleteInvoice(id) {
+            if(confirm('حذف الفاتورة نهائياً؟')) {
+                const tx = db.transaction('sales', 'readwrite');
+                tx.objectStore('sales').delete(id);
+                tx.oncomplete = () => { showToast('تم الحذف'); renderHistory(); };
+            }
+        }
+
+        // --- Reports & Charts (Chart.js Integration) ---
+        async function updateReports() {
+            const tx = db.transaction('sales', 'readonly');
+            tx.objectStore('sales').getAll().onsuccess = (e) => {
+                const sales = e.target.result;
+                
+                // 1. Basic Stats
+                const today = new Date().toLocaleDateString('en-GB');
+                const todaySales = sales.filter(s => s.date === today);
+                
+                document.getElementById('stat-today-sales').innerText = todaySales.reduce((a,b)=>a+b.total,0).toFixed(2);
+                document.getElementById('stat-total-invoices').innerText = sales.length;
+                document.getElementById('stat-total-revenue').innerText = sales.reduce((a,b)=>a+b.total,0).toFixed(2);
+
+                // 2. Chart Logic (Last 7 Days)
+                const days = {};
+                for(let i=6; i>=0; i--) {
+                    const d = new Date(); d.setDate(d.getDate() - i);
+                    days[d.toLocaleDateString('en-GB')] = 0;
+                }
+                
+                sales.forEach(s => { if(days[s.date] !== undefined) days[s.date] += s.total; });
+
+                const ctx = document.getElementById('salesChart').getContext('2d');
+                if(chartInstance) chartInstance.destroy(); // Clear old chart
+                
+                chartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: Object.keys(days),
+                        datasets: [{
+                            label: 'المبيعات',
+                            data: Object.values(days),
+                            borderColor: '#3b82f6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: {display: false} } }
+                });
+            };
+        }
+
+        // --- Clean Printing System ---
+        function printInvoice(inv) {
+            const rows = inv.items.map(i => `
+                <tr><td style="padding:5px 0;">${i.name}</td><td style="text-align:center;">${i.qty}</td><td style="text-align:right;">${(i.price*i.qty).toFixed(2)}</td></tr>
+            `).join('');
+
+            const html = `
+                <div style="text-align:center; font-family:sans-serif; direction:rtl;">
+                    ${appSettings.logo ? `<img src="${appSettings.logo}" style="width:60px; margin-bottom:10px;">` : ''}
+                    <h2 style="margin:0;">${appSettings.orgName}</h2>
+                    <p style="font-size:12px; margin:5px 0;">${appSettings.orgAddress || ''} | ${appSettings.orgPhone || ''}</p>
+                    <hr style="border-top:1px dashed #000; margin:10px 0;">
+                    <div style="display:flex; justify-content:space-between; font-size:12px;">
+                        <span>فاتورة: ${inv.sn}</span>
+                        <span>${inv.date}</span>
+                    </div>
+                    <table style="width:100%; font-size:12px; margin-top:10px; border-collapse:collapse;">
+                        <tr style="border-bottom:1px solid #000;"><th>الصنف</th><th>الكمية</th><th>السعر</th></tr>
+                        ${rows}
+                    </table>
+                    <hr style="border-top:1px dashed #000; margin:10px 0;">
+                    <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:14px;">
+                        <span>الإجمالي:</span>
+                        <span>${inv.total.toFixed(2)}</span>
+                    </div>
+                    <div style="text-align:center; margin-top:20px; font-size:10px;">شكراً لزيارتكم</div>
+                </div>
+            `;
+            
+            document.getElementById('capture-area').innerHTML = html;
+            document.getElementById('print-overlay').style.display = 'block';
+        }
+
+        function printReport() {
+            // Generates a simple text-based report for printing
+            const rev = document.getElementById('stat-total-revenue').innerText;
+            const count = document.getElementById('stat-total-invoices').innerText;
+            const html = `
+                <div style="text-align:center; direction:rtl; padding:20px;">
+                    <h2>تقرير مالي مختصر</h2>
+                    <p>${new Date().toLocaleString()}</p>
+                    <hr>
+                    <p>إجمالي الفواتير: ${count}</p>
+                    <h1>الإيرادات: ${rev}</h1>
+                    <hr>
+                    <small>نظام RZ PRO</small>
+                </div>
+            `;
+            document.getElementById('capture-area').innerHTML = html;
+            document.getElementById('print-overlay').style.display = 'block';
+        }
+
+        function closePrintOverlay() { document.getElementById('print-overlay').style.display = 'none'; }
+
+        // --- Settings & Utils ---
+        function saveSettings() {
+            const tx = db.transaction('settings', 'readwrite');
+            const s = tx.objectStore('settings');
+            s.put({key: 'orgName', value: document.getElementById('org-name').value});
+            s.put({key: 'orgAddress', value: document.getElementById('org-address').value});
+            s.put({key: 'orgPhone', value: document.getElementById('org-phone').value});
+            s.put({key: 'orgTax', value: document.getElementById('org-tax').value});
+            if(appSettings.logo) s.put({key: 'logo', value: appSettings.logo});
+            tx.oncomplete = () => { Object.assign(appSettings, {orgName: document.getElementById('org-name').value}); showToast('تم الحفظ'); };
+        }
+
+        // Helpers: Theme, Toast, Backup (Same as before but refined)
+        function toggleTheme(f) { 
+            const b = document.body; const c = f || (b.getAttribute('data-theme')==='dark'?'light':'dark'); 
+            b.setAttribute('data-theme', c); localStorage.setItem('RZ_THEME', c); 
+        }
+        function showToast(m, t='success') {
+            const div = document.createElement('div'); div.className = 'toast';
+            div.innerHTML = `<i class="fas fa-${t==='error'?'exclamation-circle':'check-circle'}"></i> ${m}`;
+            document.getElementById('toast-container').appendChild(div);
+            setTimeout(() => div.remove(), 3000);
+        }
+        function showTab(id, el) {
+            document.querySelectorAll('.container').forEach(c=>c.style.display='none');
+            document.getElementById(id).style.display='block';
+            document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+            if(el) el.classList.add('active');
+        }
+
+        // Backup System
+        async function exportDB() {
+            const tx = db.transaction(['sales', 'products', 'settings'], 'readonly');
+            const data = {
+                sales: await getAll(tx.objectStore('sales')),
+                products: await getAll(tx.objectStore('products')),
+                settings: await getAll(tx.objectStore('settings'))
+            };
+            const blob = new Blob([JSON.stringify(data)], {type:'application/json'});
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `RZ_BACKUP_${Date.now()}.json`; a.click();
+        }
+        function getAll(store) { return new Promise(r => { store.getAll().onsuccess = e => r(e.target.result); }); }
+        
+        function importDB(e) {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const data = JSON.parse(ev.target.result);
+                const tx = db.transaction(['sales', 'products', 'settings'], 'readwrite');
+                if(data.sales) data.sales.forEach(i => tx.objectStore('sales').put(i));
+                if(data.products) data.products.forEach(i => tx.objectStore('products').put(i));
+                if(data.settings) data.settings.forEach(i => tx.objectStore('settings').put(i));
+                tx.oncomplete = () => { showToast('تم الاستعادة'); location.reload(); };
+            };
+            reader.readAsText(e.target.files[0]);
+        }
+        
+        function wipeDB() { if(confirm('حذف كافة البيانات؟؟')) { const req=indexedDB.deleteDatabase(DB_NAME); req.onsuccess=()=>location.reload(); } }
+        
+        function handleLogoUpload(e) { 
+            const r = new FileReader(); r.onload=ev=>{ appSettings.logo=ev.target.result; document.getElementById('logo-preview').src=ev.target.result; }; 
+            r.readAsDataURL(e.target.files[0]); 
+        }
+        
+        function downloadCSVTemplate() {
+            const csv = "Code,Name,Price\n101,منتج 1,100\n102,منتج 2,200";
+            const a = document.createElement('a'); a.href='data:text/csv;charset=utf-8,'+encodeURI(csv); a.download='template.csv'; a.click();
+        }
+        
+        function importProductsCSV(e) {
+            const r = new FileReader(); r.onload=ev=>{
+                const rows = ev.target.result.split('\n');
+                const tx = db.transaction('products', 'readwrite');
+                let c=0;
+                rows.forEach(row => {
+                    const [code,name,price] = row.split(',');
+                    if(code && name) { tx.objectStore('products').put({code:code.trim(), name:name.trim(), price:Number(price)}); c++; }
+                });
+                tx.oncomplete = () => { showToast(`تم استيراد ${c} صنف`); loadData(); };
+            };
+            r.readAsText(e.target.files[0]);
+        }
+        
+        async function getInvoice(id) { return new Promise(r=>{ db.transaction('sales','readonly').objectStore('sales').get(id).onsuccess=e=>r(e.target.result); }); }
+
+    </script>
+</body>
+</html>
